@@ -25,7 +25,7 @@ namespace device {
         TO_CUDA_T(0x9f7db3a98a7d3ff2), TO_CUDA_T(0x7b4e97b76e7c6305),
         TO_CUDA_T(0x4cf495bf803c84e8), TO_CUDA_T(0x008d6661e2fdf49a)
     };
-    static __device__ __constant__ __align__(16) const uint32_t BLS12_381_Px128[12] = { /* left-aligned value of the modulus */
+    static __device__ __constant__ __align__(16) const uint32_t BLS12_377_Px128[12] = { /* left-aligned value of the modulus */
         TO_CUDA_T(0x8460000000000080), TO_CUDA_T(0x85aea21800000042),
         TO_CUDA_T(0x79b117dd04a4000b), TO_CUDA_T(0x116cf9807a89c78f),
         TO_CUDA_T(0x1d82e03650a49d8d), TO_CUDA_T(0xd71d230be2887563)
@@ -62,7 +62,7 @@ namespace bls12_377 {
 
 typedef mont_t<377, device::BLS12_377_P, device::BLS12_377_M0,
                     device::BLS12_377_RR, device::BLS12_377_one,
-                    device::BLS12_381_Px128> fp_mont;
+                    device::BLS12_377_Px128> fp_mont;
 struct fp_t : public fp_mont {
     using mem_t = fp_t;
     __device__ __forceinline__ fp_t() {}
