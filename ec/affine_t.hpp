@@ -94,7 +94,8 @@ public:
 #ifdef __CUDACC__
     class mem_t {
         field_h X, Y;
-        int inf[sizeof(field_t)%16 ? 2 : 4];
+        // Use minimal inf padding for large fields (e.g., BW6-761) to match FFI layout
+        int inf[(sizeof(field_t) > 64) ? 2 : 4];
 
         inline __device__ bool is_inf() const
         {   return inf[0]&1 != 0;   }
