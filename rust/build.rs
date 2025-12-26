@@ -2,16 +2,63 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#[cfg(not(feature = "build"))]
+fn maybe_enable_compiler_cache() {
+    if std::env::var_os("RUSTC_WRAPPER").is_some() {
+        return;
+    }
+
+    if tool_in_path("sccache") {
+        std::env::set_var("RUSTC_WRAPPER", "sccache");
+        println!("cargo:warning=Using sccache to cache C/CUDA compilation");
+        return;
+    }
+
+    if tool_in_path("ccache") {
+        if std::env::var_os("CC").is_none() {
+            std::env::set_var("CC", "ccache cc");
+        }
+        if std::env::var_os("CXX").is_none() {
+            std::env::set_var("CXX", "ccache c++");
+        }
+        println!("cargo:warning=Using ccache to cache C/C++ compilation");
+    }
+}
+
+#[cfg(not(feature = "build"))]
+fn tool_in_path(tool: &str) -> bool {
+    let Some(paths) = std::env::var_os("PATH") else {
+        return false;
+    };
+
+    for dir in std::env::split_paths(&paths) {
+        let candidate = dir.join(tool);
+        if candidate.is_file() {
+            return true;
+        }
+        #[cfg(windows)]
+        {
+            for ext in ["exe", "cmd", "bat"] {
+                if dir.join(format!("{tool}.{ext}")).is_file() {
+                    return true;
+                }
+            }
+        }
+    }
+
+    false
+}
 
 #[cfg(feature = "build")]
-fn main() {
-}
+fn main() {}
 
 #[cfg(not(feature = "build"))]
 fn main() {
     use std::env;
     use std::path::PathBuf;
     use std::process::Command;
+
+    maybe_enable_compiler_cache();
 
     let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
     let mut base_dir = manifest_dir.join("sppark");
